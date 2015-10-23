@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>index</title>
+    <style type="text/css" media="screen">
+        #editor {
+            height: 400px;
+            width: 800px;
+        }
+    </style>
+    <script src="src/external/system.src.js"></script>
+    <script>
+        System.config({
+            transpiler: 'babel',
+            babelOptions: { },
+            map: {
+                babel: 'src/external/browser.js'
+            }
+        });
+    </script>
+    <script src="src/external/jquery-2.1.4.js"></script>
+    <script src="src/external/d3.js"></script>
+    <script src="src/external/ohm.js"></script>
+    <script src="src/external/ace.js"></script>
+</head>
+<body>
+    <div id="editor"></div>
+    <script>
+        System.import('index.js');
+    </script>
+</body>
+</html>
