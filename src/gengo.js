@@ -24,24 +24,28 @@ export var gengoGrammar = ohm.grammar(`Gengo {
     = ":" identifier
 
   Exp  (an Exp)
-    = AddExp
+    = FunctionCallExpression
+    | BinaryExpression
 
-  AddExp  (an AddExp)
-    = AddExp "+" MulExp  -- plus
-    | AddExp "-" MulExp  -- minus
-    | MulExp
+  FunctionCallExpression (a function call)
+    = identifier "." identifier "(" number ")"
 
-  MulExp  (a MulExp)
-    = MulExp "*" PriExp  -- times
-    | MulExp "/" PriExp  -- divide
-    | PriExp
+  BinaryExpression  (a BinaryExpression)
+    = BinaryExpression "+" UnaryExpression  -- plus
+    | BinaryExpression "-" UnaryExpression  -- minus
+    | BinaryExpression "*" UnaryExpression  -- times
+    | BinaryExpression "/" UnaryExpression  -- divide
+    | UnaryExpression
 
-  PriExp  (a PriExp)
+  UnaryExpression  (a UnaryExpression)
     = "(" Exp ")"  -- paren
-    | "+" PriExp   -- pos
-    | "-" PriExp   -- neg
+    | "+" UnaryExpression   -- pos
+    | "-" UnaryExpression   -- neg
     | readIdentifier
-    | number
+    | Literal
+
+  Literal
+    = number
 
   readIdentifier  (a readIdentifier)
     = "<" identifier

@@ -2,11 +2,21 @@
 
 import { gengoGrammar } from 'src/gengo.js';
 
+// trigger
+// flow <<, >>
+// querying
+// layers
+// {x, y, ... | }
+
 var gengoSemantics = gengoGrammar.semantics();
 
 class GengoInterpreter {
     static getInstance() {
         return this.instance || (this.instance = new GengoInterpreter());
+    }
+
+    static resetInstance() {
+        this.instance = undefined;
     }
 
     constructor() {
@@ -44,14 +54,15 @@ class GengoStack {
     }
 
     declareLocalVariable(identifier) {
-        this.topFrame().setVariable(identifier, null);
+        this.topFrame().createVariable(identifier);
     }
 
-    setVariable(identifier, value) {
+    setVariableValue(identifier, value) {
         const notYetFound = {};
         var found = this.frames.reduceRight((found, frame) => {
             if(found === notYetFound && frame.hasVariable(identifier)) {
-                return frame.setVariable(identifier, value);
+                frame.getVariable(identifier).setValue(value);
+                return {};
             }
             return found;
         }, notYetFound);
@@ -87,12 +98,47 @@ class GengoFrame {
         return this.variables.has(identifier);
     }
 
-    setVariable(identifier, value) {
-        return this.variables.set(identifier, value);
+    createVariable(identifier) {
+        return this.variables.set(identifier, new GengoVariable(null));
     }
 
     getVariable(identifier) {
         return this.variables.get(identifier);
+    }
+}
+
+class GengoVariable {
+    constructor(value) {
+        this.value = value;
+    }
+
+    getValue() {
+        return this.value;
+    }
+
+    setValue(value) {
+        this.value = value;
+    }
+
+    __print__() {
+        return this.value.__print__();
+    }
+}
+
+class GengoValue {}
+
+class GengoNumber extends GengoValue {
+    constructor(value) {
+        super();
+        this.value = value;
+    }
+
+    __print__() {
+        return this.value.toString();
+    }
+
+    add(gengoNumber) {
+        return new GengoNumber(this.value + gengoNumber.value);
     }
 }
 
@@ -122,24 +168,34 @@ gengoSemantics.addOperation('interpret', {
         },
 
         Assignment: function(identifier, _, value) {
-            GengoInterpreter.getInstance().getStack().setVariable(
+            GengoInterpreter.getInstance().getStack().setVariableValue(
                 identifier.interpret(),
                 value.interpret()
             );
         },
 
-        AddExp: function(e) { return e.interpret(); },
-        AddExp_plus: function(x, _, y) { return x.interpret() + y.interpret(); },
-        AddExp_minus: function(x, _, y) { return x.interpret() - y.interpret(); },
+        Exp: function(e) { return e.interpret(); },
 
-        MulExp:        function(e)       { return e.interpret(); },
-        MulExp_times:  function(x, _, y) { return x.interpret() * y.interpret(); },
-        MulExp_divide: function(x, _, y) { return x.interpret() / y.interpret(); },
+        FunctionCallExpression: function(identifier, _, method, __, argument, ___) {
+            var variable = GengoInterpreter.getInstance().getStack().getVariable(
+                identifier.interpret()
+            );
 
-        PriExp:        function(e)       { return e.interpret(); },
-        PriExp_paren:  function(_, e, __) { return e.interpret(); },
-        PriExp_pos:    function(_, e)    { return e.interpret(); },
-        PriExp_neg:    function(_, e)    { return -e.interpret(); },
+            return variable.getValue().add(argument.interpret());
+        },
+
+        BinaryExpression: function(e) { return e.interpret(); },
+        BinaryExpression_plus: function(x, _, y) { return x.interpret() + y.interpret(); },
+        BinaryExpression_minus: function(x, _, y) { return x.interpret() - y.interpret(); },
+        BinaryExpression_times:  function(x, _, y) { return x.interpret() * y.interpret(); },
+        BinaryExpression_divide: function(x, _, y) { return x.interpret() / y.interpret(); },
+
+        UnaryExpression:        function(e)       { return e.interpret(); },
+        UnaryExpression_paren:  function(_, e, __) { return e.interpret(); },
+        UnaryExpression_pos:    function(_, e)    { return e.interpret(); },
+        UnaryExpression_neg:    function(_, e)    { return -e.interpret(); },
+
+        Literal: function(e) { return e.interpret(); },
 
         readIdentifier: function(_, e) {
             return GengoInterpreter.getInstance().getStack().getVariable(
@@ -152,7 +208,7 @@ gengoSemantics.addOperation('interpret', {
         },
 
         number: function(_) {
-            return parseFloat(this.interval.contents);
+            return new GengoNumber(parseFloat(this.interval.contents));
         }
     }
 );
@@ -171,6 +227,7 @@ var editor = ace.edit('editor');
     editor.on('change', () => {
         clearTimeout(delayedInterpretation);
         delayedInterpretation = setTimeout(() => {
+            GengoInterpreter.resetInstance();
             var executionResult = interpret(editor.getValue());
             console.log(executionResult);
         }, 750);
@@ -184,8 +241,11 @@ answer = 42
 print <answer
 {
     :answer
+    :foo
     answer = 17
+    foo = answer.add(3)
     print <answer
+    print <foo
 }
 print <answer
 `);
