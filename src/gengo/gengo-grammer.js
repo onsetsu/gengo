@@ -8,11 +8,14 @@ export var gengoGrammar = ohm.grammar(`Gengo {
     = Statement*
 
   Statement  (a Statement)
-    = "print" Exp  -- print
+    = PrintStatement
     | Scope
     | VariableDeclaration
     | Assignment
     | Exp
+
+  PrintStatement  (a PrintStatement)
+    = "print" Exp
 
   Scope  (a Scope)
     = "{" StatementList "}"
@@ -25,22 +28,13 @@ export var gengoGrammar = ohm.grammar(`Gengo {
 
   Exp  (an Exp)
     = FunctionCallExpression
-    | BinaryExpression
+    | UnaryExpression
 
   FunctionCallExpression (a function call)
     = identifier "." identifier "(" number ")"
 
-  BinaryExpression  (a BinaryExpression)
-    = BinaryExpression "+" UnaryExpression  -- plus
-    | BinaryExpression "-" UnaryExpression  -- minus
-    | BinaryExpression "*" UnaryExpression  -- times
-    | BinaryExpression "/" UnaryExpression  -- divide
-    | UnaryExpression
-
   UnaryExpression  (a UnaryExpression)
     = "(" Exp ")"  -- paren
-    | "+" UnaryExpression   -- pos
-    | "-" UnaryExpression   -- neg
     | readIdentifier
     | Literal
 
