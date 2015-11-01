@@ -31,13 +31,14 @@ d3.json('./sample-program.json', function(error, data) {
     }
 
     var svg = d3.select("body").append("svg")
+        .attr('oncontextmenu', 'return false;')
         .attr("width", width)
         .attr("height", height);
 
     var container = zoom(svg);
 
     var nodeGroup = container.selectAll("g")
-        .data(data);
+        .data(data.nodes);
 
     nodeGroup.enter().append("g")
         .attr("transform", function(d) { return 'translate('+d.x+', '+d.y+')'; })
