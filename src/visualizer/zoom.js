@@ -1,7 +1,7 @@
 export function zoom(svg) {
     // zooming
     var zoomBehavior = d3.behavior.zoom()
-        .scaleExtent([1, 8])
+        .scaleExtent([0.125, 16])
         .on("zoom", zoomed);
 
 

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Gengo</title>
+    <script src="src/external/system.src.js"></script>
+    <script>
+        System.config({
+            transpiler: 'babel',
+            babelOptions: { },
+            map: {
+                babel: 'src/external/browser.js'
+            }
+        });
+    </script>
+    <script src="src/external/jquery-2.1.4.js"></script>
+    <script src="src/external/d3.js"></script>
+    <script src="src/external/ohm.js"></script>
+    <script src="src/external/ace.js"></script>
+    <script src="src/external/paper-full.js"></script>
+</head>
+<body>
+    <canvas id="drawing"></canvas>
+    <script>
+        System.import('retry.js');
+    </script>
+</body>
+</html>

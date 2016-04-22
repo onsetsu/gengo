@@ -3,8 +3,8 @@
 import {} from 'src/gengo/gengo-interpreter.js';
 import { zoom } from 'src/visualizer/zoom.js';
 
-var width = 1280,
-    height = 700;
+var width = '100%',
+    height = '100%';
 
 d3.json('./sample-program.json', function(error, data) {
     // dragging
